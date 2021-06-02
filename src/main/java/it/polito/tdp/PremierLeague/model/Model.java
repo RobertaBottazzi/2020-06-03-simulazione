@@ -1,6 +1,8 @@
 package it.polito.tdp.PremierLeague.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +18,7 @@ public class Model {
 	private SimpleDirectedWeightedGraph<Player,DefaultWeightedEdge> grafo;
 	private Map<Integer, Player> idMap;
 	private PremierLeagueDAO dao;
+	private Player best;
 	
 	public Model() {
 		idMap=new HashMap<>();
@@ -36,12 +39,31 @@ public class Model {
 		}
 	}
 	
-	public List<Player> getTopPlayer(){
-		return null;
+	public List<Opponents> getOpponentsTopPlayer(){
+		int maxDelta=Integer.MIN_VALUE;
+		best = null;
+		List<Opponents> opponent= new ArrayList<>();
+		for(Player p: this.grafo.vertexSet()) {
+			if(this.grafo.outDegreeOf(p)>maxDelta) {
+				maxDelta=this.grafo.degreeOf(p);
+				best=p;
+			}
+		}
+		for(DefaultWeightedEdge edge: this.grafo.outgoingEdgesOf(best)) {
+			Opponents opponents =new Opponents(Graphs.getOppositeVertex(this.grafo, edge, best), this.grafo.getEdgeWeight(edge));
+			opponents.setTopPlayer(best);
+			opponent.add(opponents);
+		}
+		Collections.sort(opponent, (a,b) -> (int)b.getPesoAsMinutiGiocati()-(int)a.getPesoAsMinutiGiocati());
+		return opponent;
 	}
 	
 	public SimpleDirectedWeightedGraph<Player,DefaultWeightedEdge> getGrafo(){
 		return this.grafo;
+	}
+	
+	public Player getTopPlayer(){
+		return this.best;
 	}
 	
 }

@@ -8,6 +8,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import it.polito.tdp.PremierLeague.model.Model;
+import it.polito.tdp.PremierLeague.model.Opponents;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -57,12 +58,18 @@ public class FXMLController {
 
     @FXML
     void doDreamTeam(ActionEvent event) {
+    	
 
     }
 
     @FXML
     void doTopPlayer(ActionEvent event) {
-
+    	this.txtResult.clear();
+    	if(model.getGrafo()!=null) {
+    		this.txtResult.appendText("Il top player è: "+model.getOpponentsTopPlayer().get(0).getTopPlayer().toString()+"\n"+"\n"+"Avversari battuti: "+"\n"+"\n");
+    		for(Opponents o: model.getOpponentsTopPlayer()) 
+    			this.txtResult.appendText(o.toString()+"\n");
+    	}
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
