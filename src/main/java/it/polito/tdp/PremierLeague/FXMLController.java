@@ -58,7 +58,8 @@ public class FXMLController {
 
     @FXML
     void doDreamTeam(ActionEvent event) {
-    	
+    	int k= Integer.parseInt(this.txtK.getText());
+    	this.txtResult.appendText("Il dream team è: "+model.getDreamTeam(k).toString());
 
     }
 

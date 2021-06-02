@@ -6,6 +6,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultWeightedEdge;
@@ -18,7 +20,8 @@ public class Model {
 	private SimpleDirectedWeightedGraph<Player,DefaultWeightedEdge> grafo;
 	private Map<Integer, Player> idMap;
 	private PremierLeagueDAO dao;
-	private Player best;
+	private List<Player> dreamTeam;
+	
 	
 	public Model() {
 		idMap=new HashMap<>();
@@ -41,7 +44,7 @@ public class Model {
 	
 	public List<Opponents> getOpponentsTopPlayer(){
 		int maxDelta=Integer.MIN_VALUE;
-		best = null;
+		Player best = null;
 		List<Opponents> opponent= new ArrayList<>();
 		for(Player p: this.grafo.vertexSet()) {
 			if(this.grafo.outDegreeOf(p)>maxDelta) {
@@ -54,7 +57,7 @@ public class Model {
 			opponents.setTopPlayer(best);
 			opponent.add(opponents);
 		}
-		Collections.sort(opponent, (a,b) -> (int)b.getPesoAsMinutiGiocati()-(int)a.getPesoAsMinutiGiocati());
+		Collections.sort(opponent, (a,b) -> Double.compare(b.getPesoAsMinutiGiocati(), a.getPesoAsMinutiGiocati())/*(int)b.getPesoAsMinutiGiocati()-(int)a.getPesoAsMinutiGiocati()*/);
 		return opponent;
 	}
 	
@@ -62,8 +65,58 @@ public class Model {
 		return this.grafo;
 	}
 	
-	public Player getTopPlayer(){
-		return this.best;
+	/*Il grado di titolarità di ogni singolo giocatore, in particolare, è dato dalla differenza del peso 
+	 *dei suoi archi uscenti (i minuti che ha giocato in più dei suoi avversari) con il peso degli archi
+	 *entranti (i minuti che ha giocato in meno).*/
+	public List<Player> getDreamTeam(int k){
+		List<Player> parziale= new ArrayList<>();
+		this.dreamTeam=null;
+		double titolarita=0;
+		cerca(parziale, k, titolarita);
+		return this.dreamTeam;
 	}
 	
+	private void cerca(List<Player> parziale, int k, double maxTitolarita) {
+		//caso terminale
+		if(parziale.size()==k) { //ho riempito la squadra
+			this.dreamTeam= new ArrayList<>(parziale);
+			return; 
+		}
+		for(Player p: this.grafo.vertexSet()) {
+			if((calcolaTitolarita(p)+maxTitolarita)>maxTitolarita) {
+				if(!parziale.contains(p) && aggiuntaLecita(p, parziale)) {
+					parziale.add(p);
+					maxTitolarita+=calcolaTitolarita(p);
+					cerca(parziale,k,maxTitolarita);
+					parziale.remove(parziale.size()-1);
+				}
+				
+			}
+		}
+	}
+	
+	private double calcolaTitolarita(Player p) {
+		double titolarita;
+		Set<DefaultWeightedEdge> archiUscenti=this.grafo.outgoingEdgesOf(p);
+		Set<DefaultWeightedEdge> archiEntranti=this.grafo.incomingEdgesOf(p);
+		double pesiUscenti=0;
+		double pesiEntranti=0;
+		for(DefaultWeightedEdge edge: archiUscenti) {
+			pesiUscenti+=this.grafo.getEdgeWeight(edge);
+		}
+		for(DefaultWeightedEdge edge: archiEntranti) {
+			pesiEntranti+=this.grafo.getEdgeWeight(edge);
+		}
+		titolarita=pesiUscenti-pesiEntranti;
+		return titolarita;
+	}
+	
+	private boolean aggiuntaLecita(Player player, List<Player> parziale) {
+		for(Player p: parziale) {
+			if(!Graphs.successorListOf(this.grafo, p).contains(player))
+				return true;
+		}
+		return true;
+		
+	}
 }
