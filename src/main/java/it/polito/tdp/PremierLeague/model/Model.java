@@ -21,7 +21,7 @@ public class Model {
 	private Map<Integer, Player> idMap;
 	private PremierLeagueDAO dao;
 	private List<Player> dreamTeam;
-	
+	private double maxTitolarita;
 	
 	public Model() {
 		idMap=new HashMap<>();
@@ -71,24 +71,24 @@ public class Model {
 	public List<Player> getDreamTeam(int k){
 		List<Player> parziale= new ArrayList<>();
 		this.dreamTeam=null;
-		double titolarita=0;
-		cerca(parziale, k, titolarita);
+		this.maxTitolarita=0;
+		cerca(parziale, k);
 		return this.dreamTeam;
 	}
 	
-	private void cerca(List<Player> parziale, int k, double maxTitolarita) {
+	private void cerca(List<Player> parziale, int k) {
 		//caso terminale
-		if(parziale.size()==k && calcolaTitolarita(parziale)>maxTitolarita) { //ho riempito la squadra
+		if(parziale.size()==k && calcolaTitolarita(parziale)>this.maxTitolarita) { //ho riempito la squadra
 			this.dreamTeam= new ArrayList<>(parziale);
-			maxTitolarita=calcolaTitolarita(dreamTeam);
+			this.maxTitolarita=calcolaTitolarita(dreamTeam);
 			return; 
 		}
 		for(Player p: this.grafo.vertexSet()) {
 			if(!parziale.contains(p) && aggiuntaLecita(p, parziale)) {
 				parziale.add(p);
-				cerca(parziale,k,maxTitolarita);
-				parziale.remove(parziale.size()-1);
-			}		
+				cerca(parziale,k);
+				parziale.remove(p);
+			} 
 		}
 	}
 	
@@ -111,11 +111,13 @@ public class Model {
 	}
 	
 	private boolean aggiuntaLecita(Player player, List<Player> parziale) {
+		if(parziale.size()==0)
+			return true;
 		for(Player p: parziale) {
 			if(!Graphs.successorListOf(this.grafo, p).contains(player))
 				return true;
 		}
-		return true;
+		return false;
 		
 	}
 }
