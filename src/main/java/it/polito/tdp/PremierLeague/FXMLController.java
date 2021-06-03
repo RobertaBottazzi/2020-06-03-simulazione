@@ -9,6 +9,7 @@ import java.util.ResourceBundle;
 
 import it.polito.tdp.PremierLeague.model.Model;
 import it.polito.tdp.PremierLeague.model.Opponents;
+import it.polito.tdp.PremierLeague.model.Player;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -59,8 +60,10 @@ public class FXMLController {
     @FXML
     void doDreamTeam(ActionEvent event) {
     	int k= Integer.parseInt(this.txtK.getText());
-    	this.txtResult.appendText("Il dream team è: "+model.getDreamTeam(k).toString());
-
+    	this.txtResult.appendText("Il dream team è: ");
+    	for(Player p: model.getDreamTeam(k))
+    		this.txtResult.appendText(p.toString()+"\n");
+    	this.txtResult.appendText("con titolarità: "+model.calcolaTitolarita(model.getDreamTeam(k)));
     }
 
     @FXML

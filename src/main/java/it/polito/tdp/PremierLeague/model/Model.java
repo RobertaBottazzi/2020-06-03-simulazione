@@ -78,34 +78,33 @@ public class Model {
 	
 	private void cerca(List<Player> parziale, int k, double maxTitolarita) {
 		//caso terminale
-		if(parziale.size()==k) { //ho riempito la squadra
+		if(parziale.size()==k && calcolaTitolarita(parziale)>maxTitolarita) { //ho riempito la squadra
 			this.dreamTeam= new ArrayList<>(parziale);
+			maxTitolarita=calcolaTitolarita(dreamTeam);
 			return; 
 		}
 		for(Player p: this.grafo.vertexSet()) {
-			if((calcolaTitolarita(p)+maxTitolarita)>maxTitolarita) {
-				if(!parziale.contains(p) && aggiuntaLecita(p, parziale)) {
-					parziale.add(p);
-					maxTitolarita+=calcolaTitolarita(p);
-					cerca(parziale,k,maxTitolarita);
-					parziale.remove(parziale.size()-1);
-				}
-				
-			}
+			if(!parziale.contains(p) && aggiuntaLecita(p, parziale)) {
+				parziale.add(p);
+				cerca(parziale,k,maxTitolarita);
+				parziale.remove(parziale.size()-1);
+			}		
 		}
 	}
 	
-	private double calcolaTitolarita(Player p) {
+	public double calcolaTitolarita(List<Player> parziale) {
 		double titolarita;
-		Set<DefaultWeightedEdge> archiUscenti=this.grafo.outgoingEdgesOf(p);
-		Set<DefaultWeightedEdge> archiEntranti=this.grafo.incomingEdgesOf(p);
 		double pesiUscenti=0;
 		double pesiEntranti=0;
-		for(DefaultWeightedEdge edge: archiUscenti) {
-			pesiUscenti+=this.grafo.getEdgeWeight(edge);
-		}
-		for(DefaultWeightedEdge edge: archiEntranti) {
-			pesiEntranti+=this.grafo.getEdgeWeight(edge);
+		for(Player p: parziale) {
+			Set<DefaultWeightedEdge> archiUscenti=this.grafo.outgoingEdgesOf(p);
+			Set<DefaultWeightedEdge> archiEntranti=this.grafo.incomingEdgesOf(p);		
+			for(DefaultWeightedEdge edge: archiUscenti) {
+				pesiUscenti+=this.grafo.getEdgeWeight(edge);
+			}
+			for(DefaultWeightedEdge edge: archiEntranti) {
+				pesiEntranti+=this.grafo.getEdgeWeight(edge);
+			}
 		}
 		titolarita=pesiUscenti-pesiEntranti;
 		return titolarita;
